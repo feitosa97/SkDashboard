@@ -1,28 +1,62 @@
 $(document).ready( function () {    
-    let reports = [{
-        title: "Customers Reports",
-        tableId: "cust-report"
-    },
-    {
-        title: "Customers Reports",
-        tableId: "cust-report2"
-    },
-    {
-        title: "Customers Reports",
-        tableId: "cust-report3"
-    }
-]
+    let reports = [
+        {
+            title: "Customers Reports",
+            tableId: "cust-report",
+            duration: 5,
+            url: "http://localhost:82/api/index.asp"
+        },
+        {
+            title: "Customers Reports2",
+            tableId: "cust-report2",
+            duration: 2,
+            url: "http://localhost:82/api/index.asp"
+        },
+        {
+            title: "Customers Reports3",
+            tableId: "cust-report3",
+            duration: 3,
+            url: "http://localhost:82/api/index.asp"
+        }
+    ]
 
     reports.map(report => {
-        $('body').append(`<span class="title">${report.title}</span><table id="${report.tableId}"></table>`)
-        $.get("http://localhost:82/api/index.asp", function(data) 
+        $('#menu').append(`<div id="${report.tableId}" class="report-name">${report.title}</div>`)
+    });
+
+    let timeoutCall, table, interval;
+    let recursiveCall = (id) => 
+    {
+        clearInterval(interval)
+        let reportCount = reports.length; 
+        let report = reports[id];
+        selectReport(report.tableId);
+        $.get(report.url, function(data) 
         {
-            $(`#${report.tableId}`).append(`<thead><tr id="${report.tableId}-tr"> </tr></thead>`)    
+            if(table) table.destroy();
+            $(`#report-tr`).empty();
+            $('#title').text(report.title);
+            let time = 0;
+            interval = setInterval(() => {
+                time++; 
+                $('.progress').width((time * 10 / report.duration)+ '%')
+            }, 100); 
             data.columns.map(col => {
-                $(`#${report.tableId}-tr`).append(`<th>${col.data}</th>`)    
+                $(`#report-tr`).append(`<th>${col.data}</th>`)    
             });
-            $(`#${report.tableId}`).DataTable(data);
+            table = $(`#report`).DataTable(data);
+            
         });
-    })
+
+        timeoutCall = setTimeout(() => {        
+            recursiveCall((id + 1) % reportCount)
+        }, report.duration * 1000);
+    }
+
+    let selectReport = (tableId)=>{
+        $('.report-name').removeClass('report-name-active')
+        $(`#${tableId}`).addClass('report-name-active')
+    }
+    recursiveCall(0);
         
 });
