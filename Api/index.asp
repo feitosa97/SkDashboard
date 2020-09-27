@@ -1,13 +1,33 @@
 <% 
+Set id = Request.QueryString("id")
+Set connid = Request.QueryString("connid")
+
+connections = Array("PROVIDER=SQLOLEDB;DATA SOURCE=localhost;UID=sa;PWD=P@55w0rd;DATABASE=Nexp;",_
+    "")
+
+
+querys = Array("Select Id, ConsumerKey, Name, Slug From Customers", _ 
+    "Select Id, Name, UserName, Email, CreatedAt From Users", _
+    "Select Id, CustomerKey, GroupKey, CreatedAt From ProductLockers")
+
+
+If(id = "") Then
+    Response.Status =  "404 Not found"
+    Response.End
+End If
+
+If(connid = "") Then
+    Response.Status = "404 Not found"
+    Response.End
+End If
+
+
 
 Set cnn = Server.CreateObject("ADODB.Connection")
-cnn.open "PROVIDER=SQLOLEDB;DATA SOURCE=localhost;UID=sa;PWD=P@55w0rd;DATABASE=Nexp;"
-
-
+cnn.open connections(connid)
 
 set rs = Server.CreateObject("ADODB.recordset")
-sql="Select Id, ConsumerKey, Name, Slug From Customers"
-rs.Open sql, cnn
+rs.Open querys(id), cnn
 
 
 Dim data, columns, columnCount, colIndex, rowIndex, rowCount, rsArray
